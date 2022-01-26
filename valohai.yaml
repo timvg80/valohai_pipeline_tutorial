@@ -29,15 +29,33 @@
     - name: dataset
       default: https://valohaidemo.blob.core.windows.net/mnist/preprocessed_mnist.npz
       optional: false
-
 - pipeline:
     name: preprocess-and-train
+    edges:
+    - configuration: {}
+      source: preprocess.output.preprocessed_mnist.npz
+      target: train.input.dataset
     nodes:
     - name: preprocess
-      type: execution
+      override: {}
       step: preprocess-dataset
-    - name: train
       type: execution
+    - name: train
+      override: {}
       step: train-model
+      type: execution
+- pipeline:
+    name: utilspipeline
     edges:
-    - [preprocess.output.preprocessed_mnist.npz, train.input.dataset]
+    - configuration: {}
+      source: preprocess-dataset_1.output.preprocessed_mnist.npz
+      target: train-model_1.input.dataset
+    nodes:
+    - name: preprocess-dataset_1
+      override: {}
+      step: preprocess-dataset
+      type: execution
+    - name: train-model_1
+      override: {}
+      step: train-model
+      type: execution
