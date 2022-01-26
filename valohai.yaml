@@ -1,0 +1,43 @@
+- step:
+    name: preprocess-dataset
+    image: python:3.9
+    command:
+    - pip install -r requirements.txt
+    - python ./preprocess_dataset.py {parameters}
+    inputs:
+    - name: dataset
+      default: https://valohaidemo.blob.core.windows.net/mnist/mnist.npz
+      optional: false
+- step:
+    name: train-model
+    image: tensorflow/tensorflow:2.6.0
+    command:
+    - pip install -r requirements.txt
+    - python ./train_model.py {parameters}
+    parameters:
+    - name: learning_rate
+      default: 0.001
+      multiple-separator: ','
+      optional: false
+      type: float
+    - name: epochs
+      default: 5
+      multiple-separator: ','
+      optional: false
+      type: integer
+    inputs:
+    - name: dataset
+      default: https://valohaidemo.blob.core.windows.net/mnist/preprocessed_mnist.npz
+      optional: false
+
+- pipeline:
+    name: preprocess-and-train
+    nodes:
+    - name: preprocess
+      type: execution
+      step: preprocess-dataset
+    - name: train
+      type: execution
+      step: train-model
+    edges:
+    - [preprocess.output.preprocessed_mnist.npz, train.input.dataset]
